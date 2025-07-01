@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 初始化 SQLite 数据库
-const db = new sqlite3.Database('./codelabs.db');
+const db = new sqlite3.Database('./db/codelabs.db');
 
 // 创建表
 db.serialize(() => {
