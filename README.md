@@ -26,19 +26,20 @@ cd markdown-codelabs-converter
 ### 2. 安装依赖
 
 ```bash
-npm install
+npm install -g yarn
+yarn
 ```
 
 ### 3. 启动服务器
 
 ```bash
-npm start
+yarn start
 ```
 
 或者使用开发模式（自动重启）：
 
 ```bash
-npm run dev
+yarn dev
 ```
 
 ### 4. 打开浏览器
@@ -113,6 +114,7 @@ tags: [标签1, 标签2]
 你可以使用以下示例 URL 测试：
 
 ```
+
 <https://raw.githubusercontent.com/phyuany/algs.tech/refs/heads/main/_posts/2025-07-01-database_install-postgresql-on-debian-using-apt.md>
 
 ```
@@ -132,17 +134,8 @@ tags: [标签1, 标签2]
 
 直接运行 `npm start` 即可。
 
-### 云端部署（推荐）
-
-可以部署到以下平台：
-
-1. **Vercel** (推荐)
-2. **Netlify**
-3. **Railway**
-4. **Heroku**
-
 部署时请确保：
-- Node.js 版本 >= 14.0.0
+- Node.js 版本 推荐使用 16.x
 - 端口配置使用 `process.env.PORT`
 
 ## 自定义
@@ -154,36 +147,3 @@ tags: [标签1, 标签2]
 - 字体设置  
 - 布局样式
 - 动画效果
-
-### 添加新功能
-
-在 `parseMarkdownToCodelabs` 函数中可以添加更多 Markdown 解析逻辑。
-
-## 故障排除
-
-### 常见问题
-
-1. **无法访问 URL**
-   - 确保 URL 是公开可访问的
-   - 检查网络连接
-   - 验证 URL 格式是否正确
-
-2. **步骤显示不正确**
-   - 确保使用 `##` 作为步骤标题
-   - 检查 Markdown 格式是否正确
-
-3. **代码高亮不工作**
-   - 确保代码块使用正确的语言标识
-   - 检查是否有网络访问 CDN
-
-### 日志调试
-
-服务器会在控制台输出详细的错误信息，有助于调试问题。
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 许可证
-
-MIT License
