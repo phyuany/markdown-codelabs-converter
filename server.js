@@ -777,7 +777,7 @@ app.get('/view/:id', async (req, res) => {
 });
 
 // 管理界面 - 查看所有转换记录
-app.get('/admin', (req, res) => {
+app.get('/views', (req, res) => {
     db.all(`SELECT * FROM codelabs ORDER BY created_at DESC LIMIT 50`, (err, rows) => {
         if (err) {
             return res.status(500).send('数据库错误: ' + err.message);
@@ -842,7 +842,7 @@ app.get('/admin', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
     console.log('💡 请在浏览器中打开上述地址开始使用');
-    console.log('🔧 管理界面: http://localhost:' + PORT + '/admin');
+    console.log('🔧 管理界面: http://localhost:' + PORT + '/views');
 });
 
 // 优雅关闭数据库连接
