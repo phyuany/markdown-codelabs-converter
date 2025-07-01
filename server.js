@@ -692,9 +692,14 @@ app.get('/', (req, res) => {
 app.post('/convert', async (req, res) => {
     try {
         const { url } = req.body;
+        const requiredPrefix = 'https://raw.githubusercontent.com/phyuany/algs.tech/refs/heads/main/_posts/';
 
         if (!url) {
             return res.status(400).send('请提供 Markdown 文件 URL');
+        }
+
+        if (!url.startsWith(requiredPrefix)) {
+            return res.status(400).send(`URL必须以${requiredPrefix}开头`);
         }
 
         // 首先检查数据库缓存
