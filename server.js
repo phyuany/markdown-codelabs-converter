@@ -190,7 +190,13 @@ function parseMarkdownToCodelabs (markdownContent) {
 // 生成 Google Codelabs 风格的 HTML
 function generateCodelabsHTML (codelabs) {
     const stepsHTML = codelabs.steps.map((step, index) => {
-        const stepContent = marked.parse(step.content);
+        let stepContent = marked.parse(step.content);
+        
+        // 替换图片路径 + 添加简易Lightbox
+        stepContent = stepContent.replace(
+            /<img src="(\.\.\/img\/|\/img\/|.*?img\/)/g,
+            '<img src="https://algs.tech/img/'
+        );
 
         return `
       <div class="step" data-step="${index + 1}" ${index === 0 ? 'style="display: block;"' : 'style="display: none;"'}>
@@ -234,6 +240,29 @@ function generateCodelabsHTML (codelabs) {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        /* 确保图片不会溢出容器，并保持响应式 */
+        .step-content img {
+            max-width: 100%;  /* 限制图片最大宽度不超过父容器 */
+            height: auto;     /* 高度自适应，保持宽高比 */
+            display: block;   /* 避免图片下方出现间隙（inline 元素的默认行为） */
+            margin: 15px auto; /* 上下边距 15px，水平居中 */
+            border-radius: 6px; /* 可选：圆角效果 */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 可选：轻微阴影 */
+        }
+
+        /* 针对大图的额外约束（避免过高的图片占用太多空间） */
+        .step-content img[src*="img/"] {
+            max-height: 400px; /* 限制最大高度 */
+            object-fit: contain; /* 保持比例，完整显示图片 */
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .step-content img {
+                margin: 10px auto; /* 移动端减少边距 */
+            }
         }
         
         body {
