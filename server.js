@@ -592,8 +592,15 @@ function generateCodelabsHTML (codelabs) {
   `;
 }
 
-// 主路由 - 显示输入表单
+// 主路由 - 显示输入表单和直接转换链接
 app.get('/', (req, res) => {
+    const { url } = req.query;
+    
+    // 如果有URL参数，直接跳转到转换
+    if (url) {
+        return res.redirect(`/convert?url=${encodeURIComponent(url)}`);
+    }
+    
     res.send(`
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -688,10 +695,9 @@ app.get('/', (req, res) => {
   `);
 });
 
-// 转换路由
-app.post('/convert', async (req, res) => {
+// 转换逻辑函数
+async function convertMarkdown(url, res) {
     try {
-        const { url } = req.body;
         const requiredPrefix = 'https://raw.githubusercontent.com/phyuany/algs.tech/refs/heads/main/_posts/';
 
         if (!url) {
@@ -755,6 +761,18 @@ app.post('/convert', async (req, res) => {
             res.status(500).send('转换过程中出现错误: ' + error.message);
         }
     }
+}
+
+// POST 转换路由
+app.post('/convert', async (req, res) => {
+    const { url } = req.body;
+    await convertMarkdown(url, res);
+});
+
+// GET 转换路由
+app.get('/convert', async (req, res) => {
+    const { url } = req.query;
+    await convertMarkdown(url, res);
 });
 
 // 查看转换后的内容
