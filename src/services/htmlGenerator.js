@@ -79,8 +79,8 @@ function generateCodelabsHTML(codelabs) {
         .mobile-menu-btn {
             display: none;
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 15px;
+            right: 20px; /* 改为右侧，避免与标题重叠 */
             z-index: 1001;
             background: #1976d2;
             color: white;
@@ -101,9 +101,9 @@ function generateCodelabsHTML(codelabs) {
 
         /* 侧边栏打开时按钮变为关闭按钮 */
         .mobile-menu-btn.close {
-            left: 270px; /* 移动到侧边栏右侧 */
-            background: #f44336; /* 红色背景表示关闭 */
-            transform: rotate(90deg); /* 旋转动画 */
+            right: 20px; /* 保持在右侧 */
+            background: #f44336;
+            transform: rotate(90deg);
         }
 
         .mobile-menu-btn.close:hover {
