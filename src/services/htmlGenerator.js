@@ -437,6 +437,71 @@ function generateCodelabsHTML(codelabs) {
                 padding: 20px;
             }
         }
+
+        /* 图片放大模态框 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            cursor: zoom-out;
+        }
+
+        .image-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+            cursor: grab;
+        }
+
+        .modal-image:active {
+            cursor: grabbing;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2001;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .modal-close {
+                top: 10px;
+                right: 15px;
+                font-size: 30px;
+                width: 50px;
+                height: 50px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -463,6 +528,11 @@ function generateCodelabsHTML(codelabs) {
         <div class="main-content">
             ${stepsHTML}
         </div>
+    </div>
+    <!-- 图片放大模态框 -->
+    <div class="image-modal" id="imageModal">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <img class="modal-image" id="modalImage" src="" alt="">
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -571,6 +641,172 @@ function generateCodelabsHTML(codelabs) {
                 closeSidebar();
             }
         }
+
+        // 图片放大功能
+        class ImageModal {
+            constructor() {
+                this.modal = document.getElementById('imageModal');
+                this.modalImage = document.getElementById('modalImage');
+                this.closeBtn = document.getElementById('modalClose');
+                this.scale = 1;
+                this.isDragging = false;
+                this.startX = 0;
+                this.startY = 0;
+                this.translateX = 0;
+                this.translateY = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                // 点击关闭
+                this.closeBtn.addEventListener('click', () => this.close());
+                this.modal.addEventListener('click', (e) => {
+                    if (e.target === this.modal) this.close();
+                });
+                
+                // ESC键关闭
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.modal.classList.contains('show')) {
+                        this.close();
+                    }
+                });
+                
+                // PC端鼠标滚轮缩放
+                this.modalImage.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                    this.scale *= delta;
+                    this.scale = Math.max(0.5, Math.min(5, this.scale));
+                    this.updateTransform();
+                });
+                
+                // 拖拽功能
+                this.modalImage.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.drag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+                
+                // 移动端触摸事件
+                this.modalImage.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+                this.modalImage.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+                this.modalImage.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+                
+                // 双击重置
+                this.modalImage.addEventListener('dblclick', () => this.reset());
+                
+                // 为所有图片添加点击事件
+                this.addClickListeners();
+            }
+            
+            addClickListeners() {
+                // 使用事件委托，监听动态添加的图片
+                document.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'IMG' && e.target.closest('.step-content')) {
+                        this.open(e.target.src, e.target.alt);
+                    }
+                });
+            }
+            
+            open(src, alt) {
+                this.modalImage.src = src;
+                this.modalImage.alt = alt;
+                this.modal.classList.add('show');
+                this.reset();
+                document.body.style.overflow = 'hidden';
+            }
+            
+            close() {
+                this.modal.classList.remove('show');
+                document.body.style.overflow = '';
+                this.reset();
+            }
+            
+            reset() {
+                this.scale = 1;
+                this.translateX = 0;
+                this.translateY = 0;
+                this.updateTransform();
+            }
+            
+            updateTransform() {
+                const x = this.translateX || 0;
+                const y = this.translateY || 0;
+                const s = this.scale || 1;
+                
+                const transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + s + ')';
+                this.modalImage.style.transform = transform;
+            }
+            
+            // 鼠标拖拽
+            startDrag(e) {
+                this.isDragging = true;
+                this.startX = e.clientX - this.translateX;
+                this.startY = e.clientY - this.translateY;
+            }
+            
+            drag(e) {
+                if (!this.isDragging) return;
+                e.preventDefault();
+                this.translateX = e.clientX - this.startX;
+                this.translateY = e.clientY - this.startY;
+                this.updateTransform();
+            }
+            
+            endDrag() {
+                this.isDragging = false;
+            }
+            
+            // 移动端触摸处理
+            handleTouchStart(e) {
+                this.touches = e.touches;
+                if (e.touches.length === 1) {
+                    // 单指拖拽
+                    this.startDrag({
+                        clientX: e.touches[0].clientX,
+                        clientY: e.touches[0].clientY
+                    });
+                } else if (e.touches.length === 2) {
+                    // 双指缩放
+                    this.initialDistance = this.getDistance(e.touches[0], e.touches[1]);
+                    this.initialScale = this.scale;
+                }
+            }
+            
+            handleTouchMove(e) {
+                e.preventDefault();
+                
+                if (e.touches.length === 1 && this.isDragging) {
+                    // 单指拖拽
+                    this.drag({
+                        preventDefault: () => {},
+                        clientX: e.touches[0].clientX,
+                        clientY: e.touches[0].clientY
+                    });
+                } else if (e.touches.length === 2) {
+                    // 双指缩放
+                    const distance = this.getDistance(e.touches[0], e.touches[1]);
+                    const scaleChange = distance / this.initialDistance;
+                    this.scale = this.initialScale * scaleChange;
+                    this.scale = Math.max(0.5, Math.min(5, this.scale));
+                    this.updateTransform();
+                }
+            }
+            
+            handleTouchEnd(e) {
+                if (e.touches.length === 0) {
+                    this.endDrag();
+                }
+            }
+            
+            getDistance(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        // 初始化图片模态框
+        const imageModal = new ImageModal();
         
         // 初始化
         updateProgress();
