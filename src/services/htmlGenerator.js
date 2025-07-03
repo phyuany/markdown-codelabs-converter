@@ -75,13 +75,108 @@ function generateCodelabsHTML(codelabs) {
             object-fit: contain; /* 保持比例，完整显示图片 */
         }
 
-        /* 移动端适配 */
+        /* 移动端菜单按钮 */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            transform: scale(1);
+        }
+
+        .mobile-menu-btn:hover {
+            background: #1565c0;
+        }
+
+        /* 侧边栏打开时按钮变为关闭按钮 */
+        .mobile-menu-btn.close {
+            left: 270px; /* 移动到侧边栏右侧 */
+            background: #f44336; /* 红色背景表示关闭 */
+            transform: rotate(90deg); /* 旋转动画 */
+        }
+
+        .mobile-menu-btn.close:hover {
+            background: #d32f2f;
+        }
+
+        /* 移动端遮罩层 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
         @media (max-width: 768px) {
-            .step-content img {
-                margin: 10px auto; /* 移动端减少边距 */
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                z-index: 1000;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .step {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .step-header, .step-content, .step-navigation {
+                padding: 20px 15px;
+            }
+            
+            .step-content {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            
+            .step-content pre {
+                overflow-x: auto;
+                max-width: 100%;
+            }
+            
+            .step-content table {
+                font-size: 0.9em;
+                overflow-x: auto;
+                display: block;
+                white-space: nowrap;
+            }
+            
+            .progress-bar {
+                left: 0;
             }
         }
-        
+            
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -345,6 +440,10 @@ function generateCodelabsHTML(codelabs) {
     </style>
 </head>
 <body>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()">
+        <span id="menuIcon">☰</span>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
     </div>
@@ -416,6 +515,61 @@ function generateCodelabsHTML(codelabs) {
         
         function completeLab() {
             alert('🎉 恭喜完成所有步骤！');
+        }
+
+        // 移动端侧边栏控制
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuIcon = document.getElementById('menuIcon');
+            
+            const isOpen = sidebar.classList.contains('open');
+            
+            if (isOpen) {
+                closeSidebar();
+            } else {
+                // 打开侧边栏
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+                
+                // 按钮变为关闭状态
+                menuBtn.classList.add('close');
+                menuIcon.textContent = '✕';
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuIcon = document.getElementById('menuIcon');
+            
+            // 关闭侧边栏
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            
+            // 按钮恢复为菜单状态
+            menuBtn.classList.remove('close');
+            menuIcon.textContent = '☰';
+        }
+
+        // 点击侧边栏项目后自动关闭（移动端）
+        function goToStep(stepNumber) {
+            showStep(stepNumber);
+            // 移动端自动关闭侧边栏
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+
+        // 点击侧边栏项目后自动关闭（移动端）
+        function goToStep(stepNumber) {
+            showStep(stepNumber);
+            // 移动端自动关闭侧边栏
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
         }
         
         // 初始化
